@@ -38,6 +38,7 @@ class App{
         
         this.workingVec3 = new THREE.Vector3();
         
+        this.initQRScanner();
         this.initScene();
         this.setupXR();
 		
@@ -68,6 +69,37 @@ class App{
     	this.camera.updateProjectionMatrix();
     	this.renderer.setSize( window.innerWidth, window.innerHeight );  
     }
+    
+    initQRScanner() {
+		const qrReader = document.getElementById('qr-reader');
+		qrReader.classList.remove('hidden');
+		const self = this;
+		
+		const html5QrcodeScanner = new Html5Qrcode("qr-reader");
+		const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+
+		html5QrcodeScanner.start(
+			{ facingMode: "environment" },
+			config,
+			(decodedText) => {
+				// QR kod algılandığında
+				if (decodedText === "SNOW_KNIGHT") {
+					qrReader.classList.add('hidden');
+					if (self.knight) {
+						self.knight.object.visible = true;
+						self.knight.object.position.set(0, 0, -1);
+					}
+					html5QrcodeScanner.stop();
+				}
+			},
+			(errorMessage) => {
+				// QR okuma hatası
+				console.log(errorMessage);
+			}
+		);
+
+		this.qrScanner = html5QrcodeScanner;
+	}
     
     loadKnight(){
 	    const loader = new GLTFLoader().setPath(this.assetsPath);
